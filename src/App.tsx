@@ -249,7 +249,7 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
       supabase.from('weekly_diet_food_items').select('*').order('sort_order'),
       supabase.from('meal_substitutions').select('*').order('sort_order'),
       supabase.from('meal_substitution_food_items').select('*').order('sort_order'),
-      supabase.from('cheat_meal_configs').select('*'),
+      supabase.from('cheat_meal_config').select('*'),
       supabase.from('student_favorite_foods').select('*').order('sort_order'),
     ]);
     if (studentsRes.error || templatesRes.error || programsRes.error || requestsRes.error || plansRes.error || measurementsRes.error || remindersRes.error || exercisesRes.error || templateExRes.error || programExRes.error || dtmRes.error || dpmRes.error || dpfRes.error || dptRes.error || dtipsRes.error || foodsRes.error || wdpRes.error || wdmRes.error || wdfRes.error || msRes.error || msfRes.error || cmcRes.error || sfRes.error) {
@@ -332,7 +332,7 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
       supabase.from('weekly_diet_food_items').select('*').order('sort_order'),
       supabase.from('meal_substitutions').select('*').order('sort_order'),
       supabase.from('meal_substitution_food_items').select('*').order('sort_order'),
-      supabase.from('cheat_meal_configs').select('*'),
+      supabase.from('cheat_meal_config').select('*'),
       supabase.from('student_favorite_foods').select('*').order('sort_order'),
     ]);
     if (!wdpRes.error) setWeeklyDietPrograms((wdpRes.data ?? []) as WeeklyDietProgram[]);
@@ -686,7 +686,7 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
 
     if (data.cheatMealEnabled) {
       if (cheatMealForDetail) {
-        await supabase.from('cheat_meal_configs').update({
+        await supabase.from('cheat_meal_config').update({
           is_enabled: true,
           food_name: data.cheatMealName,
           amount: data.cheatMealAmount,
@@ -695,7 +695,7 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
           updated_at: new Date().toISOString(),
         }).eq('id', cheatMealForDetail.id);
       } else {
-        await supabase.from('cheat_meal_configs').insert({
+        await supabase.from('cheat_meal_config').insert({
           program_id: programId,
           is_enabled: true,
           food_name: data.cheatMealName,
@@ -705,7 +705,7 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
         });
       }
     } else if (cheatMealForDetail) {
-      await supabase.from('cheat_meal_configs').update({
+      await supabase.from('cheat_meal_config').update({
         is_enabled: false,
         updated_at: new Date().toISOString(),
       }).eq('id', cheatMealForDetail.id);
