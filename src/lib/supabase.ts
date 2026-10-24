@@ -685,13 +685,30 @@ export interface ProgressEvaluation {
 // ── Progress Photos ──
 export interface ProgressPhoto {
   id: string;
+  student_id: string;
   evaluation_id: string;
   photo_type: string;
   storage_path: string;
   public_url: string;
   sort_order: number;
+  file_size: number | null;
+  mime_type: string | null;
   created_at: string;
 }
+
+export const PROGRESS_PHOTO_TYPES = ['front', 'side', 'back', 'face', 'other'] as const;
+export type ProgressPhotoType = typeof PROGRESS_PHOTO_TYPES[number];
+
+export const PROGRESS_PHOTO_TYPE_LABELS: Record<ProgressPhotoType, string> = {
+  front: 'نمای جلو',
+  side: 'نمای پهلو',
+  back: 'نمای پشت',
+  face: 'چهره',
+  other: 'سایر',
+};
+
+export const PROGRESS_PHOTO_MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+export const PROGRESS_PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // ── Report Links ──
 export type ReportLinkStatus = 'active' | 'used' | 'expired' | 'revoked';
