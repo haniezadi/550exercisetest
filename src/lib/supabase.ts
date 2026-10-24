@@ -471,3 +471,289 @@ export function daysBetween(from: string, to: string): number {
   const b = new Date(to + 'T00:00:00');
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
+
+// ── Food Bank ──
+export type FoodCategory =
+  | 'grain' | 'protein' | 'vegetable' | 'fruit'
+  | 'dairy' | 'fat' | 'bread' | 'snack' | 'beverage' | 'other';
+
+export const FOOD_CATEGORY_LABELS: Record<FoodCategory, string> = {
+  grain: 'غلات و برنج',
+  protein: 'پروتئین',
+  vegetable: 'سبزیجات',
+  fruit: 'میوه',
+  dairy: 'لبنیات',
+  fat: 'چربی',
+  bread: 'نان',
+  snack: 'میان‌وعده',
+  beverage: 'نوشیدنی',
+  other: 'سایر',
+};
+
+export interface Food {
+  id: string;
+  name: string;
+  category: FoodCategory;
+  calories_per_100g: number | null;
+  protein_per_100g: number | null;
+  carbs_per_100g: number | null;
+  fat_per_100g: number | null;
+  default_unit: string;
+  household_unit: string | null;
+  household_unit_grams: number | null;
+  is_raw: boolean;
+  notes: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Student Favorite Foods ──
+export type FavoriteFoodCategory =
+  | 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'pre_workout' | 'post_workout';
+
+export const FAVORITE_FOOD_CATEGORY_LABELS: Record<FavoriteFoodCategory, string> = {
+  breakfast: 'صبحانه',
+  lunch: 'ناهار',
+  dinner: 'شام',
+  snack: 'میان‌وعده',
+  pre_workout: 'قبل تمرین',
+  post_workout: 'بعد تمرین',
+};
+
+export interface StudentFavoriteFood {
+  id: string;
+  student_id: string;
+  category: FavoriteFoodCategory;
+  food_name: string;
+  food_id: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+// ── Food Substitution Groups ──
+export interface FoodSubstitutionGroup {
+  id: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface FoodSubstitutionItem {
+  id: string;
+  group_id: string;
+  food_name: string;
+  amount: string;
+  unit: string;
+  equivalent_note: string;
+  sort_order: number;
+  created_at: string;
+}
+
+// ── Weekly Diet Program ──
+export type DayOfWeek = 'شنبه' | 'یکشنبه' | 'دوشنبه' | 'سه‌شنبه' | 'چهارشنبه' | 'پنجشنبه' | 'جمعه';
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'pre_workout' | 'post_workout';
+
+export const DAY_OF_WEEK_LABELS: DayOfWeek[] = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
+
+export const MEAL_TYPE_LABELS: Record<MealType, string> = {
+  breakfast: 'صبحانه',
+  lunch: 'ناهار',
+  dinner: 'شام',
+  snack: 'میان‌وعده',
+  pre_workout: 'قبل تمرین',
+  post_workout: 'بعد تمرین',
+};
+
+export interface WeeklyDietProgram {
+  id: string;
+  program_id: string;
+  is_active: boolean;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WeeklyDietMeal {
+  id: string;
+  weekly_program_id: string;
+  day_of_week: DayOfWeek;
+  meal_type: MealType;
+  meal_name: string;
+  sort_order: number;
+  is_active: boolean;
+  notes: string;
+  created_at: string;
+}
+
+export interface WeeklyDietFoodItem {
+  id: string;
+  weekly_meal_id: string;
+  sort_order: number;
+  food_id: string | null;
+  name: string;
+  amount: string;
+  unit: string;
+  household_unit: string;
+  household_grams: number | null;
+  is_raw: boolean;
+  calories: number | null;
+  protein_g: number | null;
+  notes: string;
+  created_at: string;
+}
+
+// ── Meal Substitutions ──
+export interface MealSubstitution {
+  id: string;
+  weekly_meal_id: string;
+  substitution_name: string;
+  sort_order: number;
+  notes: string;
+  created_at: string;
+}
+
+export interface MealSubstitutionFoodItem {
+  id: string;
+  substitution_id: string;
+  sort_order: number;
+  food_id: string | null;
+  name: string;
+  amount: string;
+  unit: string;
+  household_unit: string;
+  household_grams: number | null;
+  is_raw: boolean;
+  calories: number | null;
+  protein_g: number | null;
+  notes: string;
+  created_at: string;
+}
+
+// ── Cheat Meal ──
+export interface CheatMealConfig {
+  id: string;
+  program_id: string;
+  is_enabled: boolean;
+  food_name: string;
+  amount: string;
+  placement: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Progress Reports (biweekly) ──
+export type AdherenceLevel = '' | 'ضعیف' | 'متوسط' | 'خوب' | 'عالی';
+
+export interface ProgressReport {
+  id: string;
+  student_id: string;
+  report_date: string;
+  period_label: string;
+  weight_kg: number | null;
+  diet_adherence: string;
+  workout_adherence: string;
+  hunger_level: string;
+  energy_level: string;
+  sleep_quality: string;
+  workout_performance: string;
+  pain_issues: string;
+  student_notes: string;
+  coach_private_notes: string;
+  report_link_id: string | null;
+  created_at: string;
+}
+
+// ── Progress Evaluations (monthly) ──
+export interface ProgressEvaluation {
+  id: string;
+  student_id: string;
+  evaluation_date: string;
+  period_label: string;
+  weight_kg: number | null;
+  waist_cm: number | null;
+  hip_cm: number | null;
+  chest_cm: number | null;
+  thigh_cm: number | null;
+  arm_cm: number | null;
+  notes: string;
+  report_link_id: string | null;
+  created_at: string;
+}
+
+// ── Progress Photos ──
+export interface ProgressPhoto {
+  id: string;
+  evaluation_id: string;
+  photo_type: string;
+  storage_path: string;
+  public_url: string;
+  sort_order: number;
+  created_at: string;
+}
+
+// ── Report Links ──
+export type ReportLinkStatus = 'active' | 'used' | 'expired' | 'revoked';
+
+export const REPORT_LINK_STATUS_LABELS: Record<ReportLinkStatus, string> = {
+  active: 'فعال',
+  used: 'استفاده‌شده',
+  expired: 'منقضی',
+  revoked: 'لغوشده',
+};
+
+export const REPORT_LINK_STATUS_COLORS: Record<ReportLinkStatus, string> = {
+  active: 'bg-emerald-50 text-emerald-700',
+  used: 'bg-blue-50 text-blue-700',
+  expired: 'bg-gray-100 text-gray-500',
+  revoked: 'bg-red-50 text-red-700',
+};
+
+export interface ReportLink {
+  id: string;
+  student_id: string;
+  token: string;
+  link_type: string;
+  due_date: string | null;
+  status: ReportLinkStatus;
+  title: string;
+  created_at: string;
+  expires_at: string | null;
+  used_at: string | null;
+}
+
+// ── Corrective Issues ──
+export interface CorrectiveIssue {
+  id: string;
+  name_fa: string;
+  name_en: string;
+  description: string;
+  suggested_tags: string[];
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface CorrectiveIssueExercise {
+  id: string;
+  issue_id: string;
+  exercise_id: string;
+  sort_order: number;
+  created_at: string;
+}
+
+// ── Guides ──
+export type GuideCategory = 'food' | 'general';
+
+export interface Guide {
+  id: string;
+  slug: string;
+  title: string;
+  category: GuideCategory;
+  content: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}

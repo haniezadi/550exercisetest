@@ -6,6 +6,8 @@ import {
   Search,
   Users,
   Apple,
+  ArrowUpDown,
+  BookOpen,
   Trash2,
   Pencil,
   ArrowRight,
@@ -72,6 +74,10 @@ import RequestsView from '@/components/RequestsView';
 import RemindersView from '@/components/RemindersView';
 import TemplateEditor from '@/components/TemplateEditor';
 import PrintLayout, { type PrintMode } from '@/components/PrintLayout';
+import FoodBankView from '@/components/FoodBankView';
+import GuidesView from '@/components/GuidesView';
+import SubstitutionBankView from '@/components/SubstitutionBankView';
+import ProgressView from '@/components/ProgressView';
 import StudentStatsCards, {
   type StudentStatFilter,
   filterStudentsByStat,
@@ -88,7 +94,7 @@ import StudentStatsCards, {
 import { syncReminders, createNextMeasurementReminder, dismissOldRenewalReminders } from '@/lib/reminders';
 import { formatJalaliShort, formatJalaliLong, formatJalaliDateTime, normalizePersianText } from '@/lib/jalali';
 
-type View = 'dashboard' | 'students' | 'templates' | 'requests' | 'reminders' | 'exercises';
+type View = 'dashboard' | 'students' | 'templates' | 'requests' | 'reminders' | 'exercises' | 'foodbank' | 'substitutions' | 'guides';
 
 function useHashRoute(): [string, (h: string) => void] {
   const [hash, setHash] = useState(() => window.location.hash.replace(/^#/, '') || '/');
@@ -891,6 +897,24 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
             active={view === 'templates'}
             onClick={() => setView('templates')}
           />
+          <NavItem
+            icon={<Apple size={18} />}
+            label="بانک غذاها"
+            active={view === 'foodbank'}
+            onClick={() => setView('foodbank')}
+          />
+          <NavItem
+            icon={<ArrowUpDown size={18} />}
+            label="جایگزین‌های عمومی"
+            active={view === 'substitutions'}
+            onClick={() => setView('substitutions')}
+          />
+          <NavItem
+            icon={<BookOpen size={18} />}
+            label="راهنماهای ارسالی"
+            active={view === 'guides'}
+            onClick={() => setView('guides')}
+          />
         </nav>
         <div className="px-3 py-4 border-t border-gray-100">
           <button
@@ -1005,6 +1029,12 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
               onView={(e) => setViewingExercise(e)}
               loading={loading}
             />
+          ) : view === 'foodbank' ? (
+            <FoodBankView />
+          ) : view === 'substitutions' ? (
+            <SubstitutionBankView />
+          ) : view === 'guides' ? (
+            <GuidesView />
           ) : (
             <TemplateEditor
               templates={templates}
@@ -1791,6 +1821,7 @@ function StudentDetail({
   onRenewPlan: (p: StudentPlan) => void;
   onAddMeasurement: () => void;
 }) {
+  // ProgressView is self-contained — loads its own data for this student
   const activePlan = plans.find((p) => p.plan_status === 'active' || p.plan_status === 'expiring') ?? null;
   const sortedMeasurements = [...measurements].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at));
   const latestMeasurement = sortedMeasurements[0] ?? null;
@@ -2237,6 +2268,10 @@ function StudentDetail({
           </div>
         )}
       </div>
+
+      {/* Progress tracking section */}
+      <ProgressView student={student} />
+
     </div>
   );
 }
