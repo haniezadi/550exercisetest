@@ -49,7 +49,7 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-/* ── Print / PDF export: navy + orange palette inspired by test3.html ── */
+/* ── Print / PDF export: dark green + gold palette ── */
 @media print {
   aside,
   .no-print {
@@ -69,14 +69,14 @@ input[type='number'] {
 
   /* Color tokens */
   .print-root {
-    --p-navy: #17243d;
-    --p-navy2: #253b60;
-    --p-orange: #f47b42;
-    --p-cream: #fff7ed;
-    --p-ink: #253149;
+    --p-navy: #1c5a48;
+    --p-navy2: #247058;
+    --p-orange: #c9a84a;
+    --p-cream: #f8faf6;
+    --p-ink: #1f2937;
     --p-muted: #66758b;
-    --p-line: #dce2ed;
-    --p-bg-row: #f4f7fc;
+    --p-line: #d4e0d8;
+    --p-bg-row: #f2f7f3;
     --p-white: #ffffff;
   }
 
@@ -250,7 +250,7 @@ input[type='number'] {
   }
   .print-cover-program-type {
     font-size: 17px;
-    color: #ffad7e;
+    color: #d4b85e;
     font-weight: 700;
   }
   .print-cover-footer {
@@ -440,7 +440,7 @@ input[type='number'] {
     font-size: 11px;
     font-weight: 800;
     color: var(--p-navy);
-    background: #fde0c8;
+    background: #f0e6c8;
     padding: 4px 12px;
     border-radius: 20px;
   }
@@ -480,7 +480,7 @@ input[type='number'] {
     height: 28px;
     border-radius: 8px;
     background: var(--p-orange);
-    color: var(--p-navy);
+    color: white;
     font-size: 12px;
     font-weight: 900;
     flex-shrink: 0;
@@ -596,7 +596,7 @@ input[type='number'] {
     height: 30px;
     border-radius: 8px;
     background: var(--p-orange);
-    color: var(--p-navy);
+    color: white;
     font-size: 14px;
     font-weight: 900;
     flex-shrink: 0;

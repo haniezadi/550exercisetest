@@ -48,6 +48,15 @@ import type {
   DietProgramFoodItem,
   DietProgramTip,
   DietTip,
+  Food,
+  WeeklyDietProgram,
+  WeeklyDietMeal,
+  WeeklyDietFoodItem,
+  MealSubstitution,
+  MealSubstitutionFoodItem,
+  CheatMealConfig,
+  StudentFavoriteFood,
+  FavoriteFoodCategory,
 } from '@/lib/supabase';
 import { DIET_TIP_CATEGORY_LABELS, type DietTipCategory } from '@/lib/supabase';
 import {
@@ -78,6 +87,11 @@ import FoodBankView from '@/components/FoodBankView';
 import GuidesView from '@/components/GuidesView';
 import SubstitutionBankView from '@/components/SubstitutionBankView';
 import ProgressView from '@/components/ProgressView';
+import WeeklyDietModal, { type WeeklyDietSaveData } from '@/components/WeeklyDietModal';
+import ReportPage from '@/components/ReportPage';
+import FavoriteFoods from '@/components/FavoriteFoods';
+import CorrectiveExerciseTool from '@/components/CorrectiveExerciseTool';
+import { exportWordDoc } from '@/lib/wordExport';
 import StudentStatsCards, {
   type StudentStatFilter,
   filterStudentsByStat,
@@ -117,6 +131,13 @@ export default function App() {
   if (hash === '/form') {
     if (!supabaseConfigured) return <ConfigErrorScreen />;
     return <IntakeForm />;
+  }
+
+  // Public report route: #/report/:token
+  const reportMatch = hash.match(/^\/report\/(.+)$/);
+  if (reportMatch) {
+    if (!supabaseConfigured) return <ConfigErrorScreen />;
+    return <ReportPage token={reportMatch[1]} />;
   }
 
   // Missing Supabase configuration — show a clear message instead of crashing to a black screen.
@@ -192,12 +213,21 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
   const [deleteTarget, setDeleteTarget] = useState<Student | null>(null);
   const [saving, setSaving] = useState(false);
   const [printMode, setPrintMode] = useState<PrintMode | null>(null);
+  const [foods, setFoods] = useState<Food[]>([]);
+  const [weeklyDietPrograms, setWeeklyDietPrograms] = useState<WeeklyDietProgram[]>([]);
+  const [weeklyDietMeals, setWeeklyDietMeals] = useState<WeeklyDietMeal[]>([]);
+  const [weeklyDietFoodItems, setWeeklyDietFoodItems] = useState<WeeklyDietFoodItem[]>([]);
+  const [mealSubstitutions, setMealSubstitutions] = useState<MealSubstitution[]>([]);
+  const [mealSubFoodItems, setMealSubFoodItems] = useState<MealSubstitutionFoodItem[]>([]);
+  const [cheatMealConfigs, setCheatMealConfigs] = useState<CheatMealConfig[]>([]);
+  const [studentFavoriteFoods, setStudentFavoriteFoods] = useState<StudentFavoriteFood[]>([]);
+  const [weeklyDietModalOpen, setWeeklyDietModalOpen] = useState(false);
 
   // Full initial load — runs once on mount. Fetches everything.
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [studentsRes, templatesRes, programsRes, requestsRes, plansRes, measurementsRes, remindersRes, exercisesRes, templateExRes, programExRes, dtmRes, dpmRes, dpfRes, dptRes, dtipsRes] = await Promise.all([
+    const [studentsRes, templatesRes, programsRes, requestsRes, plansRes, measurementsRes, remindersRes, exercisesRes, templateExRes, programExRes, dtmRes, dpmRes, dpfRes, dptRes, dtipsRes, foodsRes, wdpRes, wdmRes, wdfRes, msRes, msfRes, cmcRes, sfRes] = await Promise.all([
       supabase.from('students').select('*').order('created_at', { ascending: false }),
       supabase.from('templates').select('*').order('type, created_at'),
       supabase.from('assigned_programs').select('*'),
@@ -213,8 +243,16 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
       supabase.from('diet_program_food_items').select('*').order('sort_order'),
       supabase.from('diet_program_tips').select('*').order('sort_order'),
       supabase.from('diet_tips').select('*').order('sort_order'),
+      supabase.from('foods').select('*').order('name'),
+      supabase.from('weekly_diet_programs').select('*'),
+      supabase.from('weekly_diet_meals').select('*').order('sort_order'),
+      supabase.from('weekly_diet_food_items').select('*').order('sort_order'),
+      supabase.from('meal_substitutions').select('*').order('sort_order'),
+      supabase.from('meal_substitution_food_items').select('*').order('sort_order'),
+      supabase.from('cheat_meal_configs').select('*'),
+      supabase.from('student_favorite_foods').select('*').order('sort_order'),
     ]);
-    if (studentsRes.error || templatesRes.error || programsRes.error || requestsRes.error || plansRes.error || measurementsRes.error || remindersRes.error || exercisesRes.error || templateExRes.error || programExRes.error || dtmRes.error || dpmRes.error || dpfRes.error || dptRes.error || dtipsRes.error) {
+    if (studentsRes.error || templatesRes.error || programsRes.error || requestsRes.error || plansRes.error || measurementsRes.error || remindersRes.error || exercisesRes.error || templateExRes.error || programExRes.error || dtmRes.error || dpmRes.error || dpfRes.error || dptRes.error || dtipsRes.error || foodsRes.error || wdpRes.error || wdmRes.error || wdfRes.error || msRes.error || msfRes.error || cmcRes.error || sfRes.error) {
       setError('خطا در بارگذاری اطلاعات از دیتابیس');
       setLoading(false);
       return;
@@ -234,6 +272,14 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
     setDietProgramFoodItems((dpfRes.data ?? []) as DietProgramFoodItem[]);
     setDietProgramTips((dptRes.data ?? []) as DietProgramTip[]);
     setDietTips((dtipsRes.data ?? []) as DietTip[]);
+    setFoods((foodsRes.data ?? []) as Food[]);
+    setWeeklyDietPrograms((wdpRes.data ?? []) as WeeklyDietProgram[]);
+    setWeeklyDietMeals((wdmRes.data ?? []) as WeeklyDietMeal[]);
+    setWeeklyDietFoodItems((wdfRes.data ?? []) as WeeklyDietFoodItem[]);
+    setMealSubstitutions((msRes.data ?? []) as MealSubstitution[]);
+    setMealSubFoodItems((msfRes.data ?? []) as MealSubstitutionFoodItem[]);
+    setCheatMealConfigs((cmcRes.data ?? []) as CheatMealConfig[]);
+    setStudentFavoriteFoods((sfRes.data ?? []) as StudentFavoriteFood[]);
     setLoading(false);
   }, []);
 
@@ -279,6 +325,25 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
     const r = await supabase.from('intake_requests').select('*').order('created_at', { ascending: false });
     if (!r.error) setRequests((r.data ?? []) as IntakeRequest[]);
   }, []);
+  const refreshWeeklyDiet = useCallback(async () => {
+    const [wdpRes, wdmRes, wdfRes, msRes, msfRes, cmcRes, sfRes] = await Promise.all([
+      supabase.from('weekly_diet_programs').select('*'),
+      supabase.from('weekly_diet_meals').select('*').order('sort_order'),
+      supabase.from('weekly_diet_food_items').select('*').order('sort_order'),
+      supabase.from('meal_substitutions').select('*').order('sort_order'),
+      supabase.from('meal_substitution_food_items').select('*').order('sort_order'),
+      supabase.from('cheat_meal_configs').select('*'),
+      supabase.from('student_favorite_foods').select('*').order('sort_order'),
+    ]);
+    if (!wdpRes.error) setWeeklyDietPrograms((wdpRes.data ?? []) as WeeklyDietProgram[]);
+    if (!wdmRes.error) setWeeklyDietMeals((wdmRes.data ?? []) as WeeklyDietMeal[]);
+    if (!wdfRes.error) setWeeklyDietFoodItems((wdfRes.data ?? []) as WeeklyDietFoodItem[]);
+    if (!msRes.error) setMealSubstitutions((msRes.data ?? []) as MealSubstitution[]);
+    if (!msfRes.error) setMealSubFoodItems((msfRes.data ?? []) as MealSubstitutionFoodItem[]);
+    if (!cmcRes.error) setCheatMealConfigs((cmcRes.data ?? []) as CheatMealConfig[]);
+    if (!sfRes.error) setStudentFavoriteFoods((sfRes.data ?? []) as StudentFavoriteFood[]);
+  }, []);
+
   const refreshPlansAndReminders = useCallback(async () => {
     await Promise.all([refreshPlans(), refreshReminders()]);
   }, [refreshPlans, refreshReminders]);
@@ -516,6 +581,196 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
     setSaving(false);
     setDietModalOpen(false);
     await refreshProgramsAndExercises();
+  };
+
+  const handleWeeklyDietSave = async (data: WeeklyDietSaveData) => {
+    if (!detailStudent) return;
+    setSaving(true);
+    const programId = await ensureProgramRow();
+    if (!programId) { setSaving(false); return; }
+    const hasContent = data.meals.length > 0 || data.cheatMealEnabled;
+    const dietStatus = hasContent ? 'completed' : 'none';
+    await supabase.from('assigned_programs').update({
+      diet_target_calories: data.targetCalories,
+      diet_target_protein_g: data.targetProteinG,
+      diet_pattern: data.pattern,
+      diet_status: dietStatus,
+      updated_at: new Date().toISOString(),
+    }).eq('id', programId);
+
+    let weeklyProgramId = weeklyDietProgramForDetail?.id ?? null;
+    if (!weeklyProgramId) {
+      const { data: wdp } = await supabase.from('weekly_diet_programs').insert({
+        program_id: programId,
+        is_active: true,
+        notes: '',
+      }).select().single();
+      weeklyProgramId = wdp?.id ?? null;
+    }
+    if (!weeklyProgramId) {
+      setSaving(false);
+      setError('ایجاد برنامه هفتگی ناموفق بود');
+      return;
+    }
+
+    const oldMealIds = weeklyDietMealsForDetail.map(m => m.id);
+    if (oldMealIds.length > 0) {
+      const oldMealIdSet = new Set(oldMealIds);
+      const oldSubIds = mealSubstitutions.filter(s => oldMealIdSet.has(s.weekly_meal_id)).map(s => s.id);
+      if (oldSubIds.length > 0) {
+        await supabase.from('meal_substitution_food_items').delete().in('substitution_id', oldSubIds);
+        await supabase.from('meal_substitutions').delete().in('id', oldSubIds);
+      }
+      await supabase.from('weekly_diet_food_items').delete().in('weekly_meal_id', oldMealIds);
+      await supabase.from('weekly_diet_meals').delete().in('id', oldMealIds);
+    }
+
+    for (let mi = 0; mi < data.meals.length; mi++) {
+      const meal = data.meals[mi];
+      const { data: mealRow } = await supabase.from('weekly_diet_meals').insert({
+        weekly_program_id: weeklyProgramId,
+        day_of_week: meal.day_of_week,
+        meal_type: meal.meal_type,
+        meal_name: meal.meal_name,
+        sort_order: mi,
+        is_active: meal.is_active,
+        notes: meal.notes,
+      }).select().single();
+      if (!mealRow) continue;
+
+      const foodRows = meal.foodItems.map((f, fi) => ({
+        weekly_meal_id: mealRow.id,
+        sort_order: fi,
+        food_id: f.food_id,
+        name: f.name,
+        amount: f.amount,
+        unit: f.unit,
+        household_unit: f.household_unit,
+        household_grams: f.household_grams ? Number(f.household_grams) : null,
+        is_raw: f.is_raw,
+        calories: f.calories ? Number(f.calories) : null,
+        protein_g: f.protein_g ? Number(f.protein_g) : null,
+        notes: f.notes,
+      }));
+      if (foodRows.length > 0) {
+        await supabase.from('weekly_diet_food_items').insert(foodRows);
+      }
+
+      for (const sub of meal.substitutions) {
+        const { data: subRow } = await supabase.from('meal_substitutions').insert({
+          weekly_meal_id: mealRow.id,
+          substitution_name: sub.substitution_name,
+          sort_order: 0,
+          notes: sub.notes,
+        }).select().single();
+        if (!subRow) continue;
+        const subFoodRows = sub.foodItems.map((f, fi) => ({
+          substitution_id: subRow.id,
+          sort_order: fi,
+          food_id: f.food_id,
+          name: f.name,
+          amount: f.amount,
+          unit: f.unit,
+          household_unit: f.household_unit,
+          household_grams: f.household_grams ? Number(f.household_grams) : null,
+          is_raw: f.is_raw,
+          calories: f.calories ? Number(f.calories) : null,
+          protein_g: f.protein_g ? Number(f.protein_g) : null,
+          notes: f.notes,
+        }));
+        if (subFoodRows.length > 0) {
+          await supabase.from('meal_substitution_food_items').insert(subFoodRows);
+        }
+      }
+    }
+
+    if (data.cheatMealEnabled) {
+      if (cheatMealForDetail) {
+        await supabase.from('cheat_meal_configs').update({
+          is_enabled: true,
+          food_name: data.cheatMealName,
+          amount: data.cheatMealAmount,
+          placement: data.cheatMealPlacement,
+          notes: data.cheatMealNotes,
+          updated_at: new Date().toISOString(),
+        }).eq('id', cheatMealForDetail.id);
+      } else {
+        await supabase.from('cheat_meal_configs').insert({
+          program_id: programId,
+          is_enabled: true,
+          food_name: data.cheatMealName,
+          amount: data.cheatMealAmount,
+          placement: data.cheatMealPlacement,
+          notes: data.cheatMealNotes,
+        });
+      }
+    } else if (cheatMealForDetail) {
+      await supabase.from('cheat_meal_configs').update({
+        is_enabled: false,
+        updated_at: new Date().toISOString(),
+      }).eq('id', cheatMealForDetail.id);
+    }
+
+    setSaving(false);
+    setWeeklyDietModalOpen(false);
+    await Promise.all([refreshProgramsAndExercises(), refreshWeeklyDiet()]);
+  };
+
+  const handleCorrectiveExercisesSave = async (exerciseIds: string[]) => {
+    if (!detailStudent || exerciseIds.length === 0) return;
+    setSaving(true);
+    const programId = await ensureProgramRow();
+    if (!programId) { setSaving(false); return; }
+    const existingIds = new Set(programExercisesForDetail.map(pe => pe.exercise_id));
+    const maxSort = programExercisesForDetail.reduce((max, pe) => Math.max(max, pe.sort_order), -1);
+    const dayLabel = 'حرکات اصلاحی';
+    const newRows = exerciseIds
+      .filter(id => !existingIds.has(id))
+      .map((id, i) => {
+        const ex = exercises.find(e => e.id === id);
+        return {
+          program_id: programId,
+          exercise_id: id,
+          source_template_id: null,
+          sort_order: maxSort + 1 + i,
+          sets: null,
+          reps: '',
+          rest_seconds: null,
+          rpe: null,
+          day_label: dayLabel,
+          coach_notes: '',
+          exercise_name_fa: ex?.name_fa ?? '',
+          exercise_name_en: ex?.name_en ?? '',
+          exercise_video_url: ex?.video_url ?? '',
+        };
+      });
+    if (newRows.length > 0) {
+      const { error } = await supabase.from('program_exercises').insert(newRows);
+      if (error) {
+        setError('افزودن حرکات اصلاحی ناموفق بود');
+      }
+    }
+    setSaving(false);
+    await refreshProgramsAndExercises();
+  };
+
+  const handleExportWord = () => {
+    if (!detailStudent) return;
+    exportWordDoc(
+      detailStudent,
+      programForDetail,
+      (plansForStudent.get(detailStudent.id) ?? []).find(
+        (p) => p.plan_status === 'active' || p.plan_status === 'expiring',
+      ) ?? null,
+      programExercisesForDetail,
+      dietMealsForDetail,
+      dietFoodItemsByMeal,
+      dietTipsForDetail,
+      dietTips,
+      programForDetail?.diet_template_id
+        ? templateById.get(programForDetail.diet_template_id) ?? null
+        : null,
+    );
   };
 
   const templateById = useMemo(() => {
@@ -838,6 +1093,62 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
       .sort((a, b) => a.sort_order - b.sort_order);
   }, [dietProgramTips, programForDetail]);
 
+  // --- weekly diet data for detail view ---
+  const weeklyDietProgramForDetail = useMemo(() => {
+    if (!programForDetail) return null;
+    return weeklyDietPrograms.find((p) => p.program_id === programForDetail.id && p.is_active) ?? null;
+  }, [weeklyDietPrograms, programForDetail]);
+
+  const weeklyDietMealsForDetail = useMemo(() => {
+    if (!weeklyDietProgramForDetail) return [];
+    return weeklyDietMeals.filter((m) => m.weekly_program_id === weeklyDietProgramForDetail.id);
+  }, [weeklyDietMeals, weeklyDietProgramForDetail]);
+
+  const weeklyFoodItemsByMeal = useMemo(() => {
+    const map = new Map<string, WeeklyDietFoodItem[]>();
+    for (const f of weeklyDietFoodItems) {
+      const arr = map.get(f.weekly_meal_id) ?? [];
+      arr.push(f);
+      map.set(f.weekly_meal_id, arr);
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.sort_order - b.sort_order);
+    return map;
+  }, [weeklyDietFoodItems]);
+
+  const weeklySubsByMeal = useMemo(() => {
+    const map = new Map<string, MealSubstitution[]>();
+    for (const s of mealSubstitutions) {
+      const arr = map.get(s.weekly_meal_id) ?? [];
+      arr.push(s);
+      map.set(s.weekly_meal_id, arr);
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.sort_order - b.sort_order);
+    return map;
+  }, [mealSubstitutions]);
+
+  const weeklySubFoodItemsBySub = useMemo(() => {
+    const map = new Map<string, MealSubstitutionFoodItem[]>();
+    for (const f of mealSubFoodItems) {
+      const arr = map.get(f.substitution_id) ?? [];
+      arr.push(f);
+      map.set(f.substitution_id, arr);
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.sort_order - b.sort_order);
+    return map;
+  }, [mealSubFoodItems]);
+
+  const cheatMealForDetail = useMemo(() => {
+    if (!programForDetail) return null;
+    return cheatMealConfigs.find((c) => c.program_id === programForDetail.id) ?? null;
+  }, [cheatMealConfigs, programForDetail]);
+
+  const favoriteFoodsForDetail = useMemo(() => {
+    if (!detailStudent) return [];
+    return studentFavoriteFoods
+      .filter((f) => f.student_id === detailStudent.id)
+      .map((f) => ({ category: f.category, food_name: f.food_name }));
+  }, [studentFavoriteFoods, detailStudent]);
+
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-gray-800" dir="rtl">
       {/* Sidebar */}
@@ -969,6 +1280,11 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
               onEditPlan={openEditPlan}
               onRenewPlan={handleRenewPlan}
               onAddMeasurement={() => setMeasurementModalOpen(true)}
+              exercises={exercises}
+              onEditWeeklyDiet={() => setWeeklyDietModalOpen(true)}
+              onExportWord={handleExportWord}
+              onSaveCorrectiveExercises={handleCorrectiveExercisesSave}
+              saving={saving}
             />
           ) : view === 'dashboard' ? (
             <Dashboard
@@ -1114,6 +1430,38 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
           existingTips={dietTipsForDetail}
           onSave={handleDietSave}
           onClose={() => setDietModalOpen(false)}
+          saving={saving}
+        />
+      </Modal>
+
+      {/* Weekly diet modal */}
+      <Modal
+        open={weeklyDietModalOpen}
+        title="برنامه غذایی هفتگی"
+        onClose={() => setWeeklyDietModalOpen(false)}
+      >
+        <WeeklyDietModal
+          open={weeklyDietModalOpen}
+          programId={programForDetail?.id ?? null}
+          existingProgram={weeklyDietProgramForDetail}
+          existingMeals={weeklyDietMealsForDetail}
+          existingFoodItemsByMeal={weeklyFoodItemsByMeal}
+          existingSubstitutionsByMeal={weeklySubsByMeal}
+          existingSubFoodItemsBySub={weeklySubFoodItemsBySub}
+          existingCheatMeal={cheatMealForDetail ? {
+            is_enabled: cheatMealForDetail.is_enabled,
+            food_name: cheatMealForDetail.food_name,
+            amount: cheatMealForDetail.amount,
+            placement: cheatMealForDetail.placement,
+            notes: cheatMealForDetail.notes,
+          } : null}
+          foods={foods}
+          favoriteFoods={favoriteFoodsForDetail}
+          existingTargetCalories={programForDetail?.diet_target_calories ?? null}
+          existingTargetProteinG={programForDetail?.diet_target_protein_g ?? null}
+          existingPattern={programForDetail?.diet_pattern ?? null}
+          onSave={handleWeeklyDietSave}
+          onClose={() => setWeeklyDietModalOpen(false)}
           saving={saving}
         />
       </Modal>
@@ -1790,15 +2138,20 @@ function StudentDetail({
   dietFoodItemsByMeal,
   dietProgramTips,
   dietTips,
+  exercises,
   onBack,
   onEdit,
   onEditWorkout,
   onEditDiet,
+  onEditWeeklyDiet,
   onExportPdf,
+  onExportWord,
   onAddPlan,
   onEditPlan,
   onRenewPlan,
   onAddMeasurement,
+  onSaveCorrectiveExercises,
+  saving,
 }: {
   student: Student;
   program: AssignedProgram | null;
@@ -1811,15 +2164,20 @@ function StudentDetail({
   dietFoodItemsByMeal: Map<string, DietProgramFoodItem[]>;
   dietProgramTips: DietProgramTip[];
   dietTips: DietTip[];
+  exercises: Exercise[];
   onBack: () => void;
   onEdit: () => void;
   onEditWorkout: () => void;
   onEditDiet: () => void;
+  onEditWeeklyDiet: () => void;
   onExportPdf: (mode: PrintMode) => void;
+  onExportWord: () => void;
   onAddPlan: () => void;
   onEditPlan: (p: StudentPlan) => void;
   onRenewPlan: (p: StudentPlan) => void;
   onAddMeasurement: () => void;
+  onSaveCorrectiveExercises: (exerciseIds: string[]) => void;
+  saving: boolean;
 }) {
   // ProgressView is self-contained — loads its own data for this student
   const activePlan = plans.find((p) => p.plan_status === 'active' || p.plan_status === 'expiring') ?? null;
@@ -1857,6 +2215,13 @@ function StudentDetail({
             ویرایش پرونده
           </button>
           <PdfExportMenu onExport={onExportPdf} />
+          <button
+            onClick={onExportWord}
+            className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <FileDown size={15} />
+            خروجی Word
+          </button>
         </div>
       </div>
 
@@ -2133,13 +2498,22 @@ function StudentDetail({
             <h2 className="text-base font-semibold text-gray-800">برنامه غذایی</h2>
             <ProgramStatusBadge status={program?.diet_status ?? 'none'} />
           </div>
-          <button
-            onClick={onEditDiet}
-            className="no-print flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
-          >
-            <Pencil size={15} />
-            {dietTemplate || program?.custom_description ? 'ویرایش غذایی' : 'طراحی غذایی'}
-          </button>
+          <div className="flex items-center gap-2 no-print">
+            <button
+              onClick={onEditDiet}
+              className="flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
+            >
+              <Pencil size={15} />
+              {dietTemplate || program?.custom_description ? 'ویرایش غذایی' : 'طراحی غذایی'}
+            </button>
+            <button
+              onClick={onEditWeeklyDiet}
+              className="flex items-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 transition-colors"
+            >
+              <Calendar size={15} />
+              برنامه هفتگی
+            </button>
+          </div>
         </div>
 
         {!dietTemplate && !program?.custom_description && dietMeals.length === 0 ? (
@@ -2267,6 +2641,20 @@ function StudentDetail({
             )}
           </div>
         )}
+      </div>
+
+      {/* Favorite foods */}
+      <div className="mt-6">
+        <FavoriteFoods studentId={student.id} />
+      </div>
+
+      {/* Corrective exercise tool */}
+      <div className="mt-6">
+        <CorrectiveExerciseTool
+          exercises={exercises}
+          onSave={onSaveCorrectiveExercises}
+          saving={saving}
+        />
       </div>
 
       {/* Progress tracking section */}
