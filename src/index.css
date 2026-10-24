@@ -1,0 +1,721 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #f6f7f9;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Number inputs: remove spinners for cleaner look */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* ── Print / PDF export: navy + orange palette inspired by test3.html ── */
+@media print {
+  aside,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    margin: 0 !important;
+  }
+  body {
+    background: #ffffff !important;
+    font-size: 12px !important;
+  }
+  .shadow-card,
+  .shadow-cardHover {
+    box-shadow: none !important;
+  }
+
+  /* Color tokens */
+  .print-root {
+    --p-navy: #17243d;
+    --p-navy2: #253b60;
+    --p-orange: #f47b42;
+    --p-cream: #fff7ed;
+    --p-ink: #253149;
+    --p-muted: #66758b;
+    --p-line: #dce2ed;
+    --p-bg-row: #f4f7fc;
+    --p-white: #ffffff;
+  }
+
+  /* Hide app UI, show only print root */
+  #root > div > *:not(.print-root) {
+    display: none !important;
+  }
+  .print-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: var(--p-ink);
+    counter-reset: page-num;
+  }
+
+  /* Ensure Vazirmatn font is used in print to prevent CJK fallback */
+  .print-root,
+  .print-root * {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Page setup: A4 with balanced margins */
+  @page {
+    size: A4;
+    margin: 1.5cm 1.2cm 2cm 1.2cm;
+  }
+
+  /* ── Page numbering via CSS counters ── */
+  .print-cover-page::after,
+  .print-summary-page::after,
+  .print-toc-page::after,
+  .print-content-section::after {
+    counter-increment: page-num;
+    content: counter(page-num);
+    position: fixed;
+    bottom: 0.8cm;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: var(--p-muted);
+  }
+
+  /* ── Page header (brand + tag on every non-cover page) ── */
+  .print-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid var(--p-line);
+    padding-bottom: 13px;
+    margin-bottom: 20px;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+  }
+  .print-page-brand {
+    font-size: 19px;
+    font-weight: 900;
+    color: var(--p-navy);
+    line-height: 1.3;
+  }
+  .print-page-brand small {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--p-muted);
+  }
+  .print-page-tag {
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    background: var(--p-cream);
+    color: var(--p-navy);
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* ── Page footer ── */
+  .print-page-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    border-top: 1px solid var(--p-line);
+    padding-top: 10px;
+    margin-top: 22px;
+    font-size: 11px;
+    color: var(--p-muted);
+    break-inside: avoid !important;
+  }
+
+  /* ── Cover page ── */
+  .print-cover-page {
+    page-break-after: always;
+    break-after: page;
+    min-height: calc(100vh - 3cm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+    background:
+      radial-gradient(circle at 6% 12%, rgba(255,255,255,0.08) 0 20%, transparent 20.2%),
+      radial-gradient(circle at 90% 95%, var(--p-orange) 0 19%, transparent 19.2%),
+      linear-gradient(145deg, var(--p-navy), var(--p-navy2));
+    color: white;
+  }
+  .print-cover-page::after {
+    color: rgba(255,255,255,0.4);
+  }
+  .print-cover-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 1cm;
+  }
+  .print-cover-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.12);
+    color: var(--p-orange);
+  }
+  .print-cover-brand-text p {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 900;
+    color: white;
+  }
+  .print-cover-brand-text span {
+    font-size: 11px;
+    font-weight: 500;
+    color: #d2ddee;
+  }
+  .print-cover-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 2cm 0;
+  }
+  .print-cover-pill {
+    display: inline-block;
+    padding: 6px 18px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 30px;
+    font-size: 14px;
+    color: #e0e8f6;
+  }
+  .print-cover-name {
+    font-size: 38px;
+    font-weight: 900;
+    color: white;
+    text-align: center;
+    margin: 0;
+    line-height: 1.5;
+    border-right: 5px solid var(--p-orange);
+    padding: 8px 24px;
+  }
+  .print-cover-program-type {
+    font-size: 17px;
+    color: #ffad7e;
+    font-weight: 700;
+  }
+  .print-cover-footer {
+    margin-bottom: 0.5cm;
+  }
+  .print-cover-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 20px 24px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .print-cover-info-item {
+    text-align: center;
+    border-left: 1px solid rgba(255,255,255,0.12);
+    padding: 4px 12px;
+  }
+  .print-cover-info-item:first-child {
+    border-left: none;
+  }
+  .print-cover-info-item small {
+    display: block;
+    font-size: 11px;
+    color: #d9e3f4;
+    margin-bottom: 4px;
+  }
+  .print-cover-info-item strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+  }
+
+  /* ── Section titles ── */
+  .print-section-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--p-navy);
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--p-navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+  .print-section-icon {
+    color: var(--p-orange);
+  }
+
+  /* ── Summary page ── */
+  .print-summary-page {
+    page-break-after: always;
+    break-after: page;
+    padding-top: 0;
+  }
+
+  .print-student-card {
+    border: 1px solid var(--p-line);
+    border-radius: 13px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    background: #fbfcff;
+  }
+  .print-student-card-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+  }
+  .print-student-card-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .print-student-card-label {
+    font-size: 10px;
+    color: var(--p-muted);
+    font-weight: 700;
+  }
+  .print-student-card-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--p-navy);
+  }
+
+  .print-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .print-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 13px 15px;
+    border: 1px solid var(--p-line);
+    border-radius: 13px;
+    background: #fbfcff;
+    break-inside: avoid !important;
+  }
+  .print-summary-label {
+    font-size: 10px;
+    color: var(--p-muted);
+    font-weight: 700;
+  }
+  .print-summary-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--p-navy);
+  }
+  .print-summary-plan {
+    margin-top: 16px;
+  }
+
+  /* ── TOC page ── */
+  .print-toc-page {
+    page-break-after: always;
+    break-after: page;
+    padding-top: 0;
+  }
+  .print-toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0 0;
+    display: grid;
+    gap: 10px;
+  }
+  .print-toc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    border: 1px solid var(--p-line);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--p-navy);
+    break-inside: avoid !important;
+  }
+  .print-toc-title {
+    white-space: nowrap;
+  }
+  .print-toc-dots {
+    flex: 1;
+    color: #d1d5db;
+    overflow: hidden;
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+  .print-toc-page {
+    padding: 3px 12px;
+    border-radius: 8px;
+    background: var(--p-navy);
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* ── Content sections ── */
+  .print-content-section {
+    page-break-before: always;
+    break-before: page;
+    padding-top: 0;
+  }
+
+  .print-exercise-table thead { display: table-header-group; }
+  .print-food-table thead { display: table-header-group; }
+
+  /* ── Diet targets ── */
+  .print-diet-targets {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border: 1px solid var(--p-line);
+    border-radius: 13px;
+    background: var(--p-cream);
+    margin-bottom: 16px;
+    break-inside: avoid !important;
+  }
+  .print-diet-target-badge {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--p-navy);
+    background: #fde0c8;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+  .print-diet-target-text {
+    font-size: 12px;
+    color: var(--p-ink);
+  }
+  .print-diet-target-text strong {
+    color: var(--p-navy);
+    font-weight: 800;
+  }
+
+  /* ── Meals ── */
+  .print-meals {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .print-meal {
+    border: 1px solid var(--p-line);
+    border-radius: 13px;
+    padding: 16px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .print-meal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .print-meal-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--p-orange);
+    color: var(--p-navy);
+    font-size: 12px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .print-meal-name {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--p-navy);
+    margin: 0;
+  }
+  .print-meal-fasting {
+    font-size: 10px;
+    color: var(--p-orange);
+    margin: 4px 0 8px 0;
+    font-weight: 700;
+  }
+
+  /* ── Food table ── */
+  .print-food-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .print-food-table thead th {
+    text-align: right;
+    padding: 8px 8px;
+    background: var(--p-navy);
+    color: white;
+    font-weight: 800;
+    font-size: 11px;
+  }
+  .print-food-table thead th:first-child { border-radius: 0 9px 0 0; }
+  .print-food-table thead th:last-child { border-radius: 9px 0 0 0; }
+  .print-food-table tbody td {
+    padding: 6px 8px;
+    border: 1px solid var(--p-line);
+    color: var(--p-ink);
+    vertical-align: top;
+  }
+  .print-food-table tbody tr:nth-child(even) {
+    background: var(--p-bg-row);
+  }
+  .print-food-col-name { width: 30%; }
+  .print-food-col-amount { width: 18%; }
+  .print-food-col-raw { width: 14%; }
+  .print-food-col-alt { width: 38%; }
+  .print-food-cell-name { font-weight: 700; }
+  .print-food-notes {
+    font-size: 9px;
+    color: var(--p-muted);
+    margin: 2px 0 0 0;
+    font-weight: 400;
+  }
+  .print-meal-notes {
+    font-size: 11px;
+    color: var(--p-muted);
+    margin: 8px 0 0 0;
+  }
+
+  .print-diet-description {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-right: 4px solid var(--p-orange);
+    border-radius: 10px;
+    background: var(--p-cream);
+    break-inside: avoid !important;
+  }
+  .print-diet-desc-label {
+    font-size: 11px;
+    color: var(--p-muted);
+    font-weight: 800;
+    margin: 0 0 4px 0;
+  }
+  .print-diet-desc-text {
+    font-size: 12px;
+    color: var(--p-ink);
+    line-height: 1.85;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  /* ── Workout ── */
+  .print-workout-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--p-muted);
+    margin: 0 0 16px 0;
+  }
+  .print-workout-day {
+    margin-bottom: 20px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .print-workout-day-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--p-navy);
+    margin: 0 0 10px 0;
+    padding: 8px 14px;
+    background: var(--p-cream);
+    border-radius: 10px;
+    break-after: avoid !important;
+  }
+  .print-workout-day-letter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--p-orange);
+    color: var(--p-navy);
+    font-size: 14px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .print-exercise-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .print-exercise-table thead th {
+    text-align: center;
+    padding: 9px 6px;
+    background: var(--p-navy);
+    color: white;
+    font-weight: 800;
+    font-size: 11px;
+  }
+  .print-exercise-table thead th:first-child {
+    text-align: right;
+    border-radius: 0 9px 0 0;
+  }
+  .print-exercise-table thead th:last-child {
+    border-radius: 9px 0 0 0;
+  }
+  .print-exercise-table tbody td {
+    padding: 7px 6px;
+    border: 1px solid var(--p-line);
+    color: var(--p-ink);
+    vertical-align: top;
+    text-align: center;
+  }
+  .print-exercise-table tbody tr:nth-child(even) {
+    background: var(--p-bg-row);
+  }
+  .print-exercise-table tbody td:first-child {
+    text-align: right;
+  }
+  .print-ex-col-name { width: 36%; }
+  .print-ex-col-sets { width: 8%; }
+  .print-ex-col-reps { width: 12%; }
+  .print-ex-col-rest { width: 12%; }
+  .print-ex-col-rpe { width: 8%; }
+  .print-ex-col-link { width: 22%; }
+  .print-ex-cell-name { font-weight: 700; }
+  .print-ex-num {
+    color: var(--p-muted);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .print-ex-name {
+    font-weight: 700;
+    color: var(--p-navy);
+  }
+  .print-ex-notes {
+    font-size: 9px;
+    color: var(--p-muted);
+    margin: 2px 0 0 0;
+    font-weight: 400;
+  }
+  .print-ex-link {
+    font-size: 10px;
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+  .print-ex-no-link {
+    color: #cbd5e1;
+  }
+
+  /* ── Tips ── */
+  .print-tips {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .print-tip {
+    padding: 14px 16px;
+    border: 1px solid var(--p-line);
+    border-right: 4px solid var(--p-navy2);
+    border-radius: 10px;
+    background: #fbfcff;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .print-tip-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .print-tip-category {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--p-navy);
+    background: #eef3ff;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .print-tip-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--p-navy);
+  }
+  .print-tip-body {
+    font-size: 12px;
+    color: var(--p-ink);
+    line-height: 1.85;
+    margin: 0;
+  }
+
+  /* Prevent orphan headings */
+  h1, h2, h3 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Ensure links remain visible and clickable in PDF */
+  a {
+    color: #1d4ed8 !important;
+    text-decoration: underline !important;
+  }
+}
