@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Trash2, ChevronUp, ChevronDown, Utensils, Loader2, Copy, X, Apple } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, Utensils, Loader as Loader2, Copy, X, Apple } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Food, WeeklyDietProgram, WeeklyDietMeal, WeeklyDietFoodItem, DayOfWeek, MealType, MealSubstitution, MealSubstitutionFoodItem } from '@/lib/supabase';
 import { DAY_OF_WEEK_LABELS, MEAL_TYPE_LABELS, FAVORITE_FOOD_CATEGORY_LABELS, type FavoriteFoodCategory } from '@/lib/supabase';
@@ -502,7 +502,7 @@ function WeeklyMealCard({
         </label>
         <span className="text-[10px] rounded-full bg-brand-50 px-2 py-0.5 text-brand-700 font-medium">{MEAL_TYPE_LABELS[meal.meal_type]}</span>
         <input value={meal.meal_name} onChange={(e) => onUpdateMeal({ meal_name: e.target.value })} placeholder="نام وعده" className="flex-1 rounded-md border border-gray-200 px-2 py-1 text-xs outline-none focus:border-brand-500" />
-        {mealCal > 0 && <span className="text-[10px] text-gray-400 shrink-0">{mealCal.toFixed(0).toLocaleString('fa-IR')} کالری</span>}
+        {mealCal > 0 && <span className="text-[10px] text-gray-400 shrink-0">{mealCal.toLocaleString('fa-IR', { maximumFractionDigits: 0 })} کالری</span>}
       </div>
 
       {/* Food items */}

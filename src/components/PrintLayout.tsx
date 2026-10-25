@@ -576,7 +576,7 @@ export default function PrintLayout({
                 {workoutDays.map((d, i) => (
                   <tr key={i}>
                     <td className="print-food-cell-name">{d.label}</td>
-                    <td className="print-food-cell-name">{d.label.split('-')[1]?.trim() || d.label}</td>
+                    <td className="print-food-cell-name">{d.items.length > 0 ? 'روز تمرینی' : '—'}</td>
                     <td className="print-food-cell-amount">{toPersianDigits(d.items.length)}</td>
                   </tr>
                 ))}
@@ -586,7 +586,7 @@ export default function PrintLayout({
 
           {/* Day details */}
           {workoutDays.map((day, di) => (
-            <div key={`day-${di}`} className="print-workout-day break-inside-avoid">
+            <div key={`day-${di}`} className="print-workout-day">
               <div className="print-workout-day-title">
                 <span className="print-workout-day-letter">{toPersianDigits(di + 1)}</span>
                 {day.label}

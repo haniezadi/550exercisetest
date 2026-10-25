@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Plus, Pencil, Trash2, FileDown, Loader2, X } from 'lucide-react';
+import { BookOpen, Plus, Pencil, Trash2, FileDown, Loader as Loader2, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Guide } from '@/lib/supabase';
 
@@ -162,7 +162,7 @@ function GuideFormModal({ guide, onClose, onSave, saving }: {
           <div><label className="text-xs text-gray-500 mb-1 block">عنوان</label><input value={title} onChange={e => setTitle(e.target.value)} className={inputCls} placeholder="مثال: راهنمای تغذیه در سفر" /></div>
           <div className="grid grid-cols-2 gap-3">
             <div><label className="text-xs text-gray-500 mb-1 block">شناسه (slug)</label><input value={slug} onChange={e => setSlug(e.target.value)} className={inputCls} placeholder="travel_nutrition" dir="ltr" /></div>
-            <div><label className="text-xs text-gray-500 mb-1 block">دسته</label><select value={category} onChange={e => setCategory(e.target.value)} className={inputCls}><option value="food">تغذیه</option><option value="general">عمومی</option></select></div>
+            <div><label className="text-xs text-gray-500 mb-1 block">دسته</label><select value={category} onChange={e => setCategory(e.target.value as 'food' | 'general')} className={inputCls}><option value="food">تغذیه</option><option value="general">عمومی</option></select></div>
           </div>
           <div><label className="text-xs text-gray-500 mb-1 block">محتوا</label><textarea value={content} onChange={e => setContent(e.target.value)} rows={12} className={inputCls + ' resize-none leading-7'} placeholder="متن راهنما..." /></div>
         </div>

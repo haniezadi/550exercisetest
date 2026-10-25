@@ -62,6 +62,7 @@ import type {
   CheatMealConfig,
   StudentFavoriteFood,
   FavoriteFoodCategory,
+  ProgressReport,
 } from '@/lib/supabase';
 import { DIET_TIP_CATEGORY_LABELS, type DietTipCategory } from '@/lib/supabase';
 import {
@@ -97,7 +98,6 @@ import ReportPage from '@/components/ReportPage';
 import FavoriteFoods from '@/components/FavoriteFoods';
 import CorrectiveExerciseTool from '@/components/CorrectiveExerciseTool';
 import BackupRestorePanel from '@/components/BackupRestorePanel';
-import { exportWordDoc } from '@/lib/wordExport';
 import StudentStatsCards, {
   type StudentStatFilter,
   filterStudentsByStat,
@@ -760,25 +760,6 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
     await refreshProgramsAndExercises();
   };
 
-  const handleExportWord = () => {
-    if (!detailStudent) return;
-    exportWordDoc(
-      detailStudent,
-      programForDetail,
-      (plansForStudent.get(detailStudent.id) ?? []).find(
-        (p) => p.plan_status === 'active' || p.plan_status === 'expiring',
-      ) ?? null,
-      programExercisesForDetail,
-      dietMealsForDetail,
-      dietFoodItemsByMeal,
-      dietTipsForDetail,
-      dietTips,
-      programForDetail?.diet_template_id
-        ? templateById.get(programForDetail.diet_template_id) ?? null
-        : null,
-    );
-  };
-
   const templateById = useMemo(() => {
     const map = new Map<string, Template>();
     for (const t of templates) map.set(t.id, t);
@@ -1153,6 +1134,9 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
     return reminders.filter((r) => r.student_id === detailStudent.id);
   }, [reminders, detailStudent]);
 
+  // progress_reports table may not exist yet — state stays empty until it does.
+  const [progressReports] = useState<ProgressReport[]>([]);
+
   const progressReportsForStudent = useMemo(() => {
     if (!detailStudent) return [];
     return progressReports
@@ -1314,7 +1298,6 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
               onAddMeasurement={() => setMeasurementModalOpen(true)}
               exercises={exercises}
               onEditWeeklyDiet={() => setWeeklyDietModalOpen(true)}
-              onExportWord={handleExportWord}
               onSaveCorrectiveExercises={handleCorrectiveExercisesSave}
               saving={saving}
             />
@@ -2186,7 +2169,6 @@ function StudentDetail({
   onEditDiet,
   onEditWeeklyDiet,
   onExportPdf,
-  onExportWord,
   onAddPlan,
   onEditPlan,
   onRenewPlan,
@@ -2212,7 +2194,6 @@ function StudentDetail({
   onEditDiet: () => void;
   onEditWeeklyDiet: () => void;
   onExportPdf: (mode: PrintMode) => void;
-  onExportWord: () => void;
   onAddPlan: () => void;
   onEditPlan: (p: StudentPlan) => void;
   onRenewPlan: (p: StudentPlan) => void;
@@ -2256,13 +2237,6 @@ function StudentDetail({
             ویرایش پرونده
           </button>
           <PdfExportMenu onExport={onExportPdf} />
-          <button
-            onClick={onExportWord}
-            className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <FileDown size={15} />
-            خروجی Word
-          </button>
         </div>
       </div>
 

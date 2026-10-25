@@ -115,7 +115,6 @@ input[type='number'] {
 
   /* ── Page numbering via CSS counters ── */
   .print-cover-page::after,
-  .print-summary-page::after,
   .print-toc-page::after,
   .print-content-section::after {
     counter-increment: page-num;
@@ -415,7 +414,6 @@ input[type='number'] {
 
   /* ── Content sections ── */
   .print-content-section {
-    page-break-before: always;
     break-before: page;
     padding-top: 0;
   }
@@ -572,8 +570,6 @@ input[type='number'] {
   }
   .print-workout-day {
     margin-bottom: 20px;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
   }
   .print-workout-day-title {
     display: flex;
@@ -771,8 +767,7 @@ input[type='number'] {
     gap: 18px;
   }
   .print-weekly-day {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    margin-bottom: 18px;
   }
   .print-weekly-day-title {
     font-size: 15px;

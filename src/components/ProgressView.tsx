@@ -300,8 +300,9 @@ function ProgressPhotosTab({
     const map = new Map<string, string>();
     for (const p of photos) {
       if (p.storage_path) {
-        const { data } = supabase.storage.from('progress-photos').createSignedUrl(p.storage_path, 3600);
-        if (data?.signedUrl) map.set(p.id, data.signedUrl);
+        supabase.storage.from('progress-photos').createSignedUrl(p.storage_path, 3600).then(({ data }) => {
+          if (data?.signedUrl) map.set(p.id, data.signedUrl);
+        });
       }
     }
     return map;
