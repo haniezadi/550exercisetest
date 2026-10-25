@@ -116,6 +116,28 @@ npx supabase functions deploy db-restore --project-ref <new-project-ref>
 2. در اکانت جدید، همان bucket را ایجاد کنید و فایل‌ها را آپلود کنید.
 3. مسیر فایل‌ها در جدول `progress_photos` (ستون `storage_path`) ثبت شده است و باید حفظ شود.
 
+## Push به GitHub (دستی)
+
+به دلیل نبود کلیدهای احراز هویت GitHub در محیط ساخت، Push باید به‌صورت دستی انجام شود:
+
+```bash
+# در دایرکتوری پروژه
+git remote add origin https://github.com/haniezadi/550execisetest.git
+git branch -M main
+git push -u origin main
+```
+
+اگر مخزن قبلاً وجود دارد و خالی است:
+```bash
+git push -u origin main --force
+```
+
+اگر مخزن محتوای قبلی دارد:
+```bash
+git pull origin main --rebase
+git push -u origin main
+```
+
 ## نکات امنیتی
 
 - **هرگز** کلید `SERVICE_ROLE_KEY` را در GitHub یا فایل‌های عمومی قرار ندهید.

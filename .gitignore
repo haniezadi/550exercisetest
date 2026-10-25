@@ -16,3 +16,4 @@ vitest.config.cts.timestamp-*.mjs
 
 # Supabase
 .supabase/
+supabase/functions-deploy-state.json
