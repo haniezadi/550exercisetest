@@ -1,0 +1,5 @@
+[functions.db-backup]
+verify_jwt = true
+
+[functions.db-restore]
+verify_jwt = true

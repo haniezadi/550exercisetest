@@ -1,0 +1,13 @@
+{
+  "projectId": "72331394",
+  "functions": {
+    "db-backup": {
+      "hasChanged": false,
+      "hash": "525fd07f4d8ea7c13abf52b0fa05b157818b9387c410918716c1c41fff93cb0b"
+    },
+    "db-restore": {
+      "hasChanged": false,
+      "hash": "ae828902aaf1176cb5ebf7a0b8ded0d7eeb59b7c312d04a45ded18744cde8f92"
+    }
+  }
+}

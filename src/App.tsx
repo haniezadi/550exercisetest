@@ -28,6 +28,11 @@ import {
   ExternalLink,
   Lightbulb,
   FilterX,
+  Settings,
+  Database,
+  Download,
+  Upload,
+  AlertCircle,
 } from 'lucide-react';
 import { supabase, supabaseConfigured, todayInTehran, daysBetween, addDaysISO, getEmbedUrl } from '@/lib/supabase';
 import type {
@@ -91,6 +96,7 @@ import WeeklyDietModal, { type WeeklyDietSaveData } from '@/components/WeeklyDie
 import ReportPage from '@/components/ReportPage';
 import FavoriteFoods from '@/components/FavoriteFoods';
 import CorrectiveExerciseTool from '@/components/CorrectiveExerciseTool';
+import BackupRestorePanel from '@/components/BackupRestorePanel';
 import { exportWordDoc } from '@/lib/wordExport';
 import StudentStatsCards, {
   type StudentStatFilter,
@@ -108,7 +114,7 @@ import StudentStatsCards, {
 import { syncReminders, createNextMeasurementReminder, dismissOldRenewalReminders } from '@/lib/reminders';
 import { formatJalaliShort, formatJalaliLong, formatJalaliDateTime, normalizePersianText } from '@/lib/jalali';
 
-type View = 'dashboard' | 'students' | 'templates' | 'requests' | 'reminders' | 'exercises' | 'foodbank' | 'substitutions' | 'guides';
+type View = 'dashboard' | 'students' | 'templates' | 'requests' | 'reminders' | 'exercises' | 'foodbank' | 'substitutions' | 'guides' | 'settings';
 
 function useHashRoute(): [string, (h: string) => void] {
   const [hash, setHash] = useState(() => window.location.hash.replace(/^#/, '') || '/');
@@ -1226,6 +1232,12 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
             active={view === 'guides'}
             onClick={() => setView('guides')}
           />
+          <NavItem
+            icon={<Settings size={18} />}
+            label="تنظیمات و بکاپ"
+            active={view === 'settings'}
+            onClick={() => setView('settings')}
+          />
         </nav>
         <div className="px-3 py-4 border-t border-gray-100">
           <button
@@ -1351,6 +1363,8 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
             <SubstitutionBankView />
           ) : view === 'guides' ? (
             <GuidesView />
+          ) : view === 'settings' ? (
+            <BackupRestorePanel onRefresh={loadData} />
           ) : (
             <TemplateEditor
               templates={templates}
