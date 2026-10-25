@@ -1148,6 +1148,26 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
     return cheatMealConfigs.find((c) => c.program_id === programForDetail.id) ?? null;
   }, [cheatMealConfigs, programForDetail]);
 
+  const remindersForStudent = useMemo(() => {
+    if (!detailStudent) return [];
+    return reminders.filter((r) => r.student_id === detailStudent.id);
+  }, [reminders, detailStudent]);
+
+  const progressReportsForStudent = useMemo(() => {
+    if (!detailStudent) return [];
+    return progressReports
+      .filter((r) => r.student_id === detailStudent.id)
+      .sort((a, b) => b.report_date.localeCompare(a.report_date));
+  }, [progressReports, detailStudent]);
+
+  const nextReportDateForStudent = useMemo(() => {
+    if (!detailStudent) return null;
+    const pending = reminders
+      .filter((r) => r.student_id === detailStudent.id && r.status === 'pending' && r.type === 'measurement')
+      .sort((a, b) => a.due_date.localeCompare(b.due_date));
+    return pending[0]?.due_date ?? null;
+  }, [reminders, detailStudent]);
+
   const favoriteFoodsForDetail = useMemo(() => {
     if (!detailStudent) return [];
     return studentFavoriteFoods
@@ -1621,6 +1641,13 @@ function CoachPanel({ onSignOut }: { onSignOut: () => void }) {
           dietFoodItemsByMeal={dietFoodItemsByMeal}
           dietProgramTips={dietTipsForDetail}
           dietTips={dietTips}
+          weeklyDietMeals={weeklyDietMealsForDetail}
+          weeklyFoodItemsByMeal={weeklyFoodItemsByMeal}
+          weeklySubsByMeal={weeklySubsByMeal}
+          weeklySubFoodItemsBySub={weeklySubFoodItemsBySub}
+          reminders={remindersForStudent}
+          progressReports={progressReportsForStudent}
+          nextReportDate={nextReportDateForStudent}
           dietTemplate={
             programForDetail?.diet_template_id
               ? templateById.get(programForDetail.diet_template_id) ?? null

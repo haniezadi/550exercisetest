@@ -718,4 +718,140 @@ input[type='number'] {
     color: #1d4ed8 !important;
     text-decoration: underline !important;
   }
+
+  /* ── Quick-start section ── */
+  .print-quickstart {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .print-quickstart-block {
+    border: 1px solid var(--p-line);
+    border-radius: 12px;
+    padding: 14px 18px;
+    background: #fbfcff;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .print-quickstart-h3 {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--p-navy);
+    margin: 0 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--p-line);
+  }
+  .print-quickstart-list {
+    margin: 0;
+    padding: 0 18px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .print-quickstart-list li {
+    font-size: 12px;
+    color: var(--p-ink);
+    line-height: 1.85;
+  }
+  .print-quickstart-note {
+    font-size: 12px;
+    color: var(--p-ink);
+    line-height: 1.85;
+    margin: 4px 0 0 0;
+  }
+  .print-quickstart-note strong {
+    color: var(--p-navy);
+    font-weight: 800;
+  }
+
+  /* ── Weekly diet section ── */
+  .print-weekly-diet {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .print-weekly-day {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .print-weekly-day-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--p-navy);
+    margin: 0 0 10px 0;
+    padding: 8px 14px;
+    background: var(--p-cream);
+    border-radius: 10px;
+    break-after: avoid !important;
+  }
+  .print-food-col-household { width: 16%; }
+  .print-food-col-sub { width: 22%; }
+  .print-food-col-cal { width: 10%; text-align: center; }
+  .print-food-cell-household, .print-food-cell-sub, .print-food-cell-cal {
+    text-align: center;
+    font-size: 11px;
+  }
+  .print-meal-label-inline {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--p-orange);
+    margin-bottom: 3px;
+  }
+  .print-food-sub-name {
+    font-weight: 700;
+    color: var(--p-ink);
+  }
+  .print-sub-row {
+    background: #faf8f0 !important;
+  }
+  .print-sub-prefix {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--p-muted);
+    margin-bottom: 2px;
+  }
+  .print-meal-row-start td {
+    border-top: 2px solid var(--p-line);
+  }
+
+  /* ── Workout split overview ── */
+  .print-workout-split {
+    margin-bottom: 18px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .print-workout-split-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--p-navy);
+    margin: 0 0 8px 0;
+  }
+  .print-ex-col-notes { width: 22%; }
+  .print-ex-cell-notes {
+    text-align: right;
+    font-size: 11px;
+    color: var(--p-ink);
+  }
+  .print-ex-en {
+    font-size: 10px;
+    color: var(--p-muted);
+    margin: 1px 0 0 0;
+    font-weight: 400;
+  }
+
+  /* ── Progress section ── */
+  .print-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── Final page ── */
+  .print-final {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 }
