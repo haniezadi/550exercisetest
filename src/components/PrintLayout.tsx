@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Dumbbell, Apple, Lightbulb, Rocket, TrendingUp, Phone } from 'lucide-react';
+import { Dumbbell, Apple, Rocket } from 'lucide-react';
 import type {
   Student,
   AssignedProgram,
@@ -98,18 +98,10 @@ export default function PrintLayout({
   const [pageNumbers, setPageNumbers] = useState<Record<string, number>>({});
   const [phase, setPhase] = useState<'measure' | 'print'>('measure');
 
-  const tipsForFullPdf = dietProgramTips.filter((pt) => (pt.pdf_mode ?? 'full') !== 'none');
-  const tipsForTipsPdf = dietProgramTips.filter((pt) => {
-    const m = pt.pdf_mode ?? 'full';
-    return m === 'full' || m === 'tips_only';
-  });
-  const tipsToShow = mode === 'tips' ? tipsForTipsPdf : tipsForFullPdf;
-
   const hasWorkout = mode === 'full' && programExercises.length > 0;
   const hasWeeklyDiet = weeklyDietMeals.length > 0;
   const hasLegacyDiet = dietMeals.length > 0;
-  const hasDiet = (mode === 'full' || mode === 'diet') && (hasWeeklyDiet || hasLegacyDiet || !!program?.custom_description);
-  const hasTips = tipsToShow.length > 0;
+  const hasDiet = (mode === 'full' || mode === 'diet') && (hasWeeklyDiet || hasLegacyDiet);
 
   // Workout days ordered by Persian week
   const workoutDays: { label: string; items: ProgramExercise[] }[] = [];
@@ -149,21 +141,10 @@ export default function PrintLayout({
   const pendingReminders = reminders.filter((r) => r.status === 'pending').sort((a, b) => a.due_date.localeCompare(b.due_date));
   const nextReminder = pendingReminders[0] ?? null;
 
-  // Progress data
-  const latestReport = progressReports[0] ?? null;
-  const hasProgress = mode === 'full' && (progressReports.length > 0 || nextReportDate != null);
-
-  // Final page: only if there's real contact/student note info
-  const studentNotes = student.coach_notes?.trim();
-  const hasFinalPage = mode === 'full' && (!!studentNotes || !!program?.custom_description);
-
   const sections: SectionInfo[] = [];
   if (mode === 'full') sections.push({ key: 'quickstart', title: 'راهنمای شروع سریع' });
   if (hasDiet) sections.push({ key: 'diet', title: 'برنامه تغذیه' });
   if (hasWorkout) sections.push({ key: 'workout', title: 'برنامه تمرین' });
-  if (hasProgress) sections.push({ key: 'progress', title: 'پیگیری پیشرفت' });
-  if (hasTips) sections.push({ key: 'tips', title: 'نکات اجرایی' });
-  if (hasFinalPage) sections.push({ key: 'final', title: 'نکات اختصاصی' });
 
   useEffect(() => {
     if (phase !== 'measure') return;
@@ -218,11 +199,9 @@ export default function PrintLayout({
     if (phase !== 'print') return;
 
     const prefix =
-      mode === 'tips'
-        ? 'نکات اجرایی'
-        : mode === 'diet'
-          ? 'برنامه غذایی'
-          : 'برنامه و دفترچه اختصاصی';
+      mode === 'diet'
+        ? 'برنامه غذایی'
+        : 'برنامه اختصاصی';
     const filename = `${prefix} ${sanitizeFilename(student.name)}.pdf`;
     const prevTitle = document.title;
     document.title = filename;
@@ -246,15 +225,13 @@ export default function PrintLayout({
   }, [phase, mode, student.name, onDone]);
 
   const programTitle =
-    mode === 'tips'
-      ? 'نکات و توصیه‌های اجرایی'
-      : mode === 'diet'
-        ? 'برنامه غذایی'
-        : hasWorkout && hasDiet
-          ? 'برنامه تمرینی و غذایی'
-          : hasWorkout
-            ? 'برنامه تمرینی'
-            : 'برنامه غذایی';
+    mode === 'diet'
+      ? 'برنامه غذایی'
+      : hasWorkout && hasDiet
+        ? 'برنامه اختصاصی تمرین و تغذیه'
+        : hasWorkout
+          ? 'برنامه اختصاصی تمرین'
+          : 'برنامه اختصاصی تغذیه';
 
   const todayStr = todayInTehran();
   const showToc = sections.length > 2;
@@ -266,9 +243,12 @@ export default function PrintLayout({
     </div>
   );
 
-  const renderPageFooter = () => (
+  const renderPageFooter = (sectionKey?: string) => (
     <div className="print-page-footer">
       <span>{student.name}</span>
+      {sectionKey && pageNumbers[sectionKey] != null && (
+        <span className="print-page-footer-num">{toPersianDigits(pageNumbers[sectionKey])}</span>
+      )}
     </div>
   );
 
@@ -338,7 +318,7 @@ export default function PrintLayout({
               </li>
             ))}
           </ul>
-          {renderPageFooter()}
+          {renderPageFooter('toc')}
         </div>
       )}
 
@@ -371,6 +351,12 @@ export default function PrintLayout({
                 <li>لینک ویدئوی آموزشی هر حرکت در جدول تمرین درج شده است؛ پیش از اجرا ببینید.</li>
               </ul>
             </div>
+            {program?.custom_description && (
+              <div className="print-quickstart-block">
+                <h3 className="print-quickstart-h3">توضیحات برنامه</h3>
+                <p className="print-quickstart-note">{program.custom_description}</p>
+              </div>
+            )}
             {nextReminder && (
               <div className="print-quickstart-block">
                 <h3 className="print-quickstart-h3">گزارش بعدی</h3>
@@ -381,7 +367,7 @@ export default function PrintLayout({
               </div>
             )}
           </div>
-          {renderPageFooter()}
+          {renderPageFooter('quickstart')}
         </div>
       )}
 
@@ -538,14 +524,7 @@ export default function PrintLayout({
             </div>
           )}
 
-          {program?.custom_description && (
-            <div className="print-diet-description">
-              <p className="print-diet-desc-label">توضیحات تکمیلی</p>
-              <p className="print-diet-desc-text">{program.custom_description}</p>
-            </div>
-          )}
-
-          {renderPageFooter()}
+          {renderPageFooter('diet')}
         </div>
       )}
 
@@ -637,137 +616,26 @@ export default function PrintLayout({
             </div>
           ))}
 
-          {renderPageFooter()}
-        </div>
-      )}
-
-      {/* ── 5. Progress tracking ── */}
-      {hasProgress && (
-        <div
-          ref={(el) => { sectionRefs.current['progress'] = el; }}
-          className="print-content-section"
-        >
-          {renderPageHeader('پیگیری پیشرفت')}
-          <h2 className="print-section-title">
-            <TrendingUp size={18} className="print-section-icon" />
-            پیگیری پیشرفت
-          </h2>
-          <div className="print-progress">
-            <div className="print-quickstart-block">
-              <h3 className="print-quickstart-h3">دستورالعمل ثبت وزن و اندازه‌ها</h3>
-              <ul className="print-quickstart-list">
-                <li>وزن خود را هفتگی و در شرایط یکسان (صبح، ناشتا) ثبت کنید.</li>
-                <li>اندازه‌های بدن (کمر، باسن، سینه، بازو، ران) را ماهانه ثبت کنید.</li>
-                <li>عکس‌های پیشرفت در صورت تأیید مربی، در پنل و فقط برای شما و مربی قابل مشاهده هستند؛ عمومی نمی‌شوند.</li>
-              </ul>
+          {/* Coach contact block */}
+          <div className="print-coach-contact">
+            <div className="print-coach-contact-inner">
+              <span className="print-coach-contact-label">ارتباط با مربی</span>
+              <a href="tel:09172775456" className="print-coach-phone">۰۹۱۷۲۷۷۵۴۵۶</a>
+              <a
+                href="https://t.me/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="print-coach-telegram"
+              >
+                <svg className="print-coach-telegram-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.36 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+                </svg>
+                <span>تلگرام</span>
+              </a>
             </div>
-            {nextReportDate && (
-              <div className="print-quickstart-block">
-                <h3 className="print-quickstart-h3">تاریخ گزارش بعدی</h3>
-                <p className="print-quickstart-note">
-                  گزارش پیشرفت بعدی: <strong>{formatJalaliLong(nextReportDate)}</strong>
-                </p>
-                <p className="print-quickstart-note">
-                  روش ارسال: گزارش از طریق لینک اختصاصی یا پیام مستقیم به مربی ارسال می‌شود.
-                </p>
-              </div>
-            )}
-            {progressReports.length > 0 && (
-              <div className="print-quickstart-block">
-                <h3 className="print-quickstart-h3">گزارش‌های ثبت‌شده</h3>
-                <table className="print-food-table">
-                  <thead>
-                    <tr>
-                      <th className="print-food-col-name">تاریخ</th>
-                      <th className="print-food-col-amount">دوره</th>
-                      <th className="print-food-col-household">وزن</th>
-                      <th className="print-food-col-sub">پایبندی تغذیه</th>
-                      <th className="print-food-col-cal">پایبندی تمرین</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {progressReports.map((r) => (
-                      <tr key={r.id}>
-                        <td className="print-food-cell-name">{formatJalaliShort(r.report_date)}</td>
-                        <td className="print-food-cell-amount">{r.period_label || '—'}</td>
-                        <td className="print-food-cell-household">{r.weight_kg != null ? `${toPersianDigits(r.weight_kg)} kg` : '—'}</td>
-                        <td className="print-food-cell-sub">{r.diet_adherence || '—'}</td>
-                        <td className="print-food-cell-cal">{r.workout_adherence || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
-          {renderPageFooter()}
-        </div>
-      )}
 
-      {/* ── 6. Tips section ── */}
-      {hasTips && (
-        <div
-          ref={(el) => { sectionRefs.current['tips'] = el; }}
-          className="print-content-section"
-        >
-          {renderPageHeader('نکات اجرایی')}
-          <h2 className="print-section-title">
-            <Lightbulb size={18} className="print-section-icon" />
-            نکات و توصیه‌های اجرایی
-          </h2>
-          <div className="print-tips">
-            {tipsToShow.map((pt) => {
-              const tip = dietTips.find((d) => d.id === pt.tip_id);
-              const category = tip?.category ?? 'custom';
-              return (
-                <div key={pt.id} className="print-tip break-inside-avoid">
-                  <div className="print-tip-header">
-                    <span className="print-tip-category">
-                      {DIET_TIP_CATEGORY_LABELS[category as DietTipCategory] ?? category}
-                    </span>
-                    {tip?.title && <span className="print-tip-title">{tip.title}</span>}
-                  </div>
-                  <p className="print-tip-body">{pt.custom_text}</p>
-                </div>
-              );
-            })}
-          </div>
-          {renderPageFooter()}
-        </div>
-      )}
-
-      {/* ── 7. Final page (only if real content exists) ── */}
-      {hasFinalPage && (
-        <div
-          ref={(el) => { sectionRefs.current['final'] = el; }}
-          className="print-content-section"
-        >
-          {renderPageHeader('نکات اختصاصی')}
-          <h2 className="print-section-title">
-            <Phone size={18} className="print-section-icon" />
-            ارتباط و نکات اختصاصی
-          </h2>
-          <div className="print-final">
-            <div className="print-quickstart-block">
-              <h3 className="print-quickstart-h3">ارتباط با مربی</h3>
-              <p className="print-quickstart-note">
-                در صورت داشتن سؤال یا نیاز به تغییر برنامه، از طریق پیام مستقیم در پنل یا شماره تماس ثبت‌شده با مربی (هانی ایزدی) در ارتباط باشید.
-              </p>
-            </div>
-            {studentNotes && (
-              <div className="print-quickstart-block">
-                <h3 className="print-quickstart-h3">نکات اختصاصی شاگرد</h3>
-                <p className="print-quickstart-note">{studentNotes}</p>
-              </div>
-            )}
-            {program?.custom_description && (
-              <div className="print-quickstart-block">
-                <h3 className="print-quickstart-h3">توضیحات برنامه</h3>
-                <p className="print-quickstart-note">{program.custom_description}</p>
-              </div>
-            )}
-          </div>
-          {renderPageFooter()}
+          {renderPageFooter('workout')}
         </div>
       )}
     </div>

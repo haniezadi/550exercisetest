@@ -90,7 +90,6 @@ input[type='number'] {
     top: 0;
     width: 100%;
     color: var(--p-ink);
-    counter-reset: page-num;
   }
 
   /* Ensure Vazirmatn font is used in print to prevent CJK fallback */
@@ -113,19 +112,15 @@ input[type='number'] {
     margin: 1.5cm 1.2cm 2cm 1.2cm;
   }
 
-  /* ── Page numbering via CSS counters ── */
-  .print-cover-page::after,
-  .print-toc-page::after,
-  .print-content-section::after {
-    counter-increment: page-num;
-    content: counter(page-num);
-    position: fixed;
-    bottom: 0.8cm;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 9px;
+  /* ── Page numbering: shown in section footers ── */
+  .print-page-footer-num {
+    font-size: 10px;
+    font-weight: 700;
     color: var(--p-muted);
+    white-space: nowrap;
   }
+  /* Cover page: no footer */
+  .print-cover-page .print-page-footer { display: none; }
 
   /* ── Page header (brand + tag on every non-cover page) ── */
   .print-page-header {
@@ -189,7 +184,7 @@ input[type='number'] {
     color: white;
   }
   .print-cover-page::after {
-    color: rgba(255,255,255,0.4);
+    content: none;
   }
   .print-cover-brand {
     display: flex;
@@ -664,60 +659,7 @@ input[type='number'] {
     color: #cbd5e1;
   }
 
-  /* ── Tips ── */
-  .print-tips {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .print-tip {
-    padding: 14px 16px;
-    border: 1px solid var(--p-line);
-    border-right: 4px solid var(--p-navy2);
-    border-radius: 10px;
-    background: #fbfcff;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-  .print-tip-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .print-tip-category {
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--p-navy);
-    background: #eef3ff;
-    padding: 3px 10px;
-    border-radius: 20px;
-  }
-  .print-tip-title {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--p-navy);
-  }
-  .print-tip-body {
-    font-size: 12px;
-    color: var(--p-ink);
-    line-height: 1.85;
-    margin: 0;
-  }
-
   /* Prevent orphan headings */
-  h1, h2, h3 {
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-  }
-
-  /* Ensure links remain visible and clickable in PDF */
-  a {
-    color: #1d4ed8 !important;
-    text-decoration: underline !important;
-  }
-
-  /* ── Quick-start section ── */
   .print-quickstart {
     display: flex;
     flex-direction: column;
@@ -838,17 +780,51 @@ input[type='number'] {
     font-weight: 400;
   }
 
-  /* ── Progress section ── */
-  .print-progress {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  /* ── Coach contact block (end of workout) ── */
+  .print-coach-contact {
+    margin-top: 24px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
-
-  /* ── Final page ── */
-  .print-final {
+  .print-coach-contact-inner {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border: 1px solid var(--p-line);
+    border-right: 4px solid var(--p-orange);
+    border-radius: 12px;
+    background: var(--p-cream);
+  }
+  .print-coach-contact-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--p-navy);
+    white-space: nowrap;
+  }
+  .print-coach-phone {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--p-navy);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    direction: ltr;
+  }
+  .print-coach-telegram {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 10px;
+    background: #229ED9;
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .print-coach-telegram-icon {
+    flex-shrink: 0;
   }
 }
