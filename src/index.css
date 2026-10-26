@@ -176,7 +176,6 @@ input[type='number'] {
 
   /* ── Cover page ── */
   .print-cover-page {
-    page-break-after: always;
     break-after: page;
     min-height: calc(100vh - 3cm);
     display: flex;
@@ -369,7 +368,6 @@ input[type='number'] {
 
   /* ── TOC page ── */
   .print-toc-page {
-    page-break-after: always;
     break-after: page;
     padding-top: 0;
   }
@@ -416,6 +414,9 @@ input[type='number'] {
   .print-content-section {
     break-before: page;
     padding-top: 0;
+  }
+  .print-content-section:first-of-type {
+    break-before: auto;
   }
 
   .print-exercise-table thead { display: table-header-group; }
@@ -570,6 +571,7 @@ input[type='number'] {
   }
   .print-workout-day {
     margin-bottom: 20px;
+    break-inside: avoid-page;
   }
   .print-workout-day-title {
     display: flex;
